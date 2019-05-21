@@ -16,7 +16,6 @@ public class ServiceA {
 		this.db = db;
 	}
 	public int getSum() {
-		System.out.println("this is getSum in service a");
 		return da.getNumber() + db.getNumber();
 	}
 	public void isThisWillCalled() {
