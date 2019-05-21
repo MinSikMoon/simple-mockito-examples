@@ -7,7 +7,16 @@
 ````java
 package test;
 
+import static org.hamcrest.Matchers.arrayContaining;
+import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
+import static org.hamcrest.Matchers.isEmptyString;
+import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.given;
@@ -19,14 +28,21 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import main.DaoA;
+import main.DaoB;
 import main.ServiceA;
-
+@RunWith(MockitoJUnitRunner.class)
 public class MockTest1 {
 	@Test
 	public void tc1() {
@@ -93,10 +109,6 @@ public class MockTest1 {
 	}
 	@Test 
 	public void tc9_argument_capture() {
-		//declare argument captor
-		//define argument captor on specific method call
-		//capture the argument
-
 		//given
 		ArgumentCaptor<String> sac = ArgumentCaptor.forClass(String.class);
 		ServiceA sa = new ServiceA();
@@ -109,8 +121,53 @@ public class MockTest1 {
 		//then
 		assertThat(sac.getValue(), is("yes"));
 	}
-
+	@Test 
+	public void tc10_hamcrest_matchers() {
+		List<Integer> numbers = Arrays.asList(10, 11, 20, 30);
+		assertThat(numbers, hasSize(4));
+		assertThat(numbers, hasItems(10,30));
+		assertThat(numbers, everyItem(greaterThan(9)));
+		assertThat(numbers, everyItem(lessThan(31)));
+	}
+	@Test 
+	public void tc11_hamcrest_matchers2() {
+		assertThat("", isEmptyString());
+		assertThat(null, isEmptyOrNullString());
+		Integer[] numbs = {1,2,3};
+		assertThat(numbs, arrayContaining(1,2,3)); //순서와 인자값 다 같아야 통과
+		assertThat(numbs, arrayContainingInAnyOrder(3,1,2)); //순서와 인자값 다 같아야 통과
+	}
+	
+	
+	@Mock
+	DaoA da;
+	@Mock
+	DaoB db;
+	@InjectMocks
+	ServiceA sa;
+	/**
+	ServiceA sa = new ServiceA();
+	sa.setDaoA(mock(DaoA.class));
+	sa.setDaoB(mock(DaoB.class));
+	 * 
+	 */
+	@Test
+	public void tc12_annotation() {
+		/*ServiceA sa = mock(ServiceA.class); //serviceA의 mock을 만든다. */
+		when(sa.getSum()).thenReturn(3);    //mock이기에 getSum()하면 0 나온다. 그래서 getSum()하면 3나오게 시킨다.
+		assertEquals(3, sa.getSum());
+	}
+	@Captor
+	ArgumentCaptor<String> sac;
+	@Test 
+	public void tc13_captor() {
+		//given
+		given(da.getBoolean()).willReturn(true); //false로 하면 da가 불려지지 않아서 fail이다.
+		//when
+		sa.getInnerBoolean(da);
+		verify(da).getStr(sac.capture());
+		//then
+		assertThat(sac.getValue(), is("yes"));
+	}
 }
-
-
 ````
